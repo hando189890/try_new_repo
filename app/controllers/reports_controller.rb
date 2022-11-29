@@ -1,5 +1,4 @@
 class ReportsController < ApplicationController
-  before_action :authenticate_user!, only: [:index, :show]
 
   def show
     id = params[:id] # retrieve report ID from URI route
@@ -10,16 +9,10 @@ class ReportsController < ApplicationController
   def index
     @completed_checked = params[:show_complete]
     @emer_only_checked = params[:emer_only]
-    if params[:problem_type].nil?
-      params[:problem_type] = Hash.new
-      params[:problem_type][:problem_type] = "All"
-    end
-    @selected = params[:problem_type][:problem_type]
-      
-
-    @problemlist = Report.problemlist.prepend("All")
 
     @reports = Report.where(status: "Uncompleted")
+
+    puts params
 
     if !params[:show_complete].nil?
       @reports = Report
@@ -27,14 +20,11 @@ class ReportsController < ApplicationController
 
     if !params[:emer_only].nil?
       @reports = @reports.where(emergencylevel: "Urgent")
+      puts @reports
     end
 
     if @reports == Report
       @reports = Report.all
-    end
-
-    if !params[:problem_type].nil? && params[:problem_type][:problem_type] != "All"
-      @reports = @reports.where(problemtype: params[:problem_type][:problem_type])
     end
 
     session[:emer_only]=params[:emer_only]
@@ -42,7 +32,7 @@ class ReportsController < ApplicationController
   end
 
   def new
-    @problemlist = Report.problemlist
+    # default: render 'new' template
     @prefilled_building = ''
     @prefilled_area = ''
     if params[:report] != nil
@@ -54,13 +44,13 @@ class ReportsController < ApplicationController
   end
 
   def create
-    if ReportsHelper.valid_uni?(report_params[:uni])
+    if report_params[:uni].match?(/^[a-z][a-z][0-9][0-9][0-9][0-9]$/x)
       flash[:notice] = Report.check_and_create(report_params)
     else
       flash[:notice] = "invalid UNI"
     end
 
-    redirect_to root_path
+    redirect_to reports_path
   end
 
   def edit
@@ -71,20 +61,11 @@ class ReportsController < ApplicationController
     report = Report.find params[:id]
     flash[:notice] = "Marked as complete successful"
     report.status = "Completed"
-    report.save
-    redirect_to report_path(report)
-  end
 
-  def addcmt
-    report = Report.find params[:id]
-    if params[:comment][:cmt].blank?
-      flash[:notice] = "Cannot add a blank comment"
-    else 
-      flash[:notice] = "Comment successfully added"
-      report.comments.build(:comment => params[:comment][:cmt], :manager_id=>session[:manager_id])
-      report.save
-    end 
-    redirect_to report_path(report)
+    if report.save
+      NoticeMailer.send_notice(report.uni, report).deliver_later
+      redirect_to report_path(report)
+    end
   end
 
   def update
@@ -95,10 +76,10 @@ class ReportsController < ApplicationController
   end
 
   def destroy
-    # @report = Report.find(params[:id])
-    # @report.destroy
-    # flash[:notice] = "Report '#{@report.id}' completed."
-    # redirect_to reports_path
+    @report = Report.find(params[:id])
+    @report.destroy
+    flash[:notice] = "Report '#{@report.id}' completed."
+    redirect_to reports_path
   end
 
   private
