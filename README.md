@@ -57,7 +57,7 @@ bundle exec rails server
 - Adjust some UI components
 - Fix two bugs from iter1 (Format of UNI and More tests)
 
-## Feature (iter3)
+## Feature (iter2)
 - Send Email notification to reporter when a report mark as completed.
     * To test this function, please upload a new report with your uni
     * When a report marked as complete, a email notification will send to your Lion email by 1023990429@qq.com

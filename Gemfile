@@ -33,4 +33,5 @@ gem 'jquery-rails'
 
 # custom
 gem 'rqrcode'
+gem 'bcrypt'
 gem 'carrierwave'
