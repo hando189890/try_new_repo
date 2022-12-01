@@ -73,4 +73,3 @@ bundle exec rails server
 - User login system
     - [Creating a User Login System - Ruby on Rails](https://dev.to/kjdowns/creating-a-user-login-system-ruby-on-rails-2kl2)
     - [Authentication with Bcrypt](https://www.ananunesdasilva.com/posts/authentication-with-bcrypt)
-# try_new_repo
